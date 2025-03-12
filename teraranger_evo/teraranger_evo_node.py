@@ -11,27 +11,49 @@ import serial
 import sys
 import crcmod.predefined
 from std_msgs.msg import Float32, String
+from sensor_msgs.msg import Range
 
 class TeraRangerEvoNode(Node):
     def __init__(self):
         super().__init__('teraranger_evo_node')
         
         # Declare parameters with descriptors
+        name_descriptor = ParameterDescriptor(
+            description='Device name for TeraRanger Evo sensor')
+
         port_descriptor = ParameterDescriptor(
             description='Serial port for TeraRanger Evo sensor')
+
+        frame_descriptor = ParameterDescriptor(
+            description='Frame name for TeraRanger Evo sensor')
         
+        self.declare_parameter(
+            'device_name', 
+            'TR_evo_3m',  # Default name
+            name_descriptor
+        )
+
         self.declare_parameter(
             'serial_port', 
             '/dev/ttyACM0',  # Default port
             port_descriptor
         )
+
+        self.declare_parameter(
+            'frame_id', 
+            'lidar_frame',  # Default frame
+            frame_descriptor
+        )
         
         # Get parameters
+        self.device_name = self.get_parameter('device_name').value
         self.port = self.get_parameter('serial_port').value
+        self.frame = self.get_parameter('frame_id').value
         
         # Publishers
-        self.raw_publisher = self.create_publisher(String, '/distance_raw', 10)
-        self.distance_publisher = self.create_publisher(Float32, '/distance', 10)
+        self.raw_publisher = self.create_publisher(String, self.device_name + '/distance_raw', 10)
+        self.distance_publisher = self.create_publisher(Float32, self.device_name + '/distance', 10)
+        self.range_publisher = self.create_publisher(Range, self.device_name + '/range', 10)
         
         # CRC function
         self.crc8_fn = crcmod.predefined.mkPredefinedCrcFun('crc-8')
@@ -40,7 +62,7 @@ class TeraRangerEvoNode(Node):
         self.connect_to_sensor()
         
         # Timer for reading sensor
-        self.timer = self.create_timer(0.01, self.timer_callback)  # 100Hz
+        self.timer = self.create_timer(0.1, self.timer_callback)  # 10Hz
         
         self.get_logger().info('TeraRanger Evo node initialized')
     
@@ -94,7 +116,7 @@ class TeraRangerEvoNode(Node):
                         return -float('inf')
                     else:
                         # Convert frame in meters
-                        return rng / 1000.0
+                        return float(rng / 1000.0)
                 else:
                     self.get_logger().warning("CRC mismatch. Check connection.")
                     return None
@@ -112,6 +134,16 @@ class TeraRangerEvoNode(Node):
             distance_msg = Float32()
             distance_msg.data = distance
             self.distance_publisher.publish(distance_msg)
+            range_msg = Range()
+            range_msg.header.stamp = self.get_clock().now().to_msg()
+            range_msg.header.frame_id = self.frame 
+            range_msg.radiation_type = Range.INFRARED # or ULTRASOUND
+            range_msg.field_of_view = 0.1 # Radians TODO: fix with correct values or make param
+            range_msg.min_range = 0.1 # Meters TODO: fix with correct values or make param
+            range_msg.max_range = 5.0 # Meters TODO: fix with correct values or make param
+            range_msg.range = float(distance)
+            self.range_publisher.publish(range_msg)
+
     
     def destroy_node(self):
         if hasattr(self, 'evo') and self.evo.is_open:
