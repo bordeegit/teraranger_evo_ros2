@@ -18,8 +18,8 @@ class TeraRangerEvoNode(Node):
         super().__init__('teraranger_evo_node')
         
         # Declare parameters with descriptors
-        name_descriptor = ParameterDescriptor(
-            description='Device name for TeraRanger Evo sensor')
+        type_descriptor = ParameterDescriptor(
+            description='Lidar type for TeraRanger Evo sensor')
 
         port_descriptor = ParameterDescriptor(
             description='Serial port for TeraRanger Evo sensor')
@@ -28,9 +28,9 @@ class TeraRangerEvoNode(Node):
             description='Frame name for TeraRanger Evo sensor')
         
         self.declare_parameter(
-            'device_name', 
+            'lidar_type', 
             'TR_evo_3m',  # Default name
-            name_descriptor
+            type_descriptor
         )
 
         self.declare_parameter(
@@ -46,14 +46,17 @@ class TeraRangerEvoNode(Node):
         )
         
         # Get parameters
-        self.device_name = self.get_parameter('device_name').value
+        self.lidar_type = self.get_parameter('lidar_type').value
         self.port = self.get_parameter('serial_port').value
         self.frame = self.get_parameter('frame_id').value
         
         # Publishers
-        self.raw_publisher = self.create_publisher(String, self.device_name + '/distance_raw', 10)
-        self.distance_publisher = self.create_publisher(Float32, self.device_name + '/distance', 10)
-        self.range_publisher = self.create_publisher(Range, self.device_name + '/range', 10)
+        self.raw_publisher = self.create_publisher(String, self.lidar_type + '/distance_raw', 10)
+        self.distance_publisher = self.create_publisher(Float32, self.lidar_type + '/distance', 10)
+        self.range_publisher = self.create_publisher(Range, self.lidar_type + '/range', 10)
+
+        self.range_msg = Range()
+        self.setup_range_msg()
         
         # CRC function
         self.crc8_fn = crcmod.predefined.mkPredefinedCrcFun('crc-8')
@@ -66,6 +69,14 @@ class TeraRangerEvoNode(Node):
         
         self.get_logger().info('TeraRanger Evo node initialized')
     
+    def setup_range_msg(self):
+        self.range_msg.header.frame_id = self.frame 
+        self.range_msg.radiation_type = Range.INFRARED 
+        self.range_msg.field_of_view = 0.0349066 # Seems to be fixed for all types
+        self.range_msg.min_range = 0.1 # Meters TODO: fix with correct values or make param
+        self.range_msg.max_range = 5.0 # Meters TODO: fix with correct values or make param
+
+
     def connect_to_sensor(self):
         try:
             self.get_logger().info(f'Attempting to open port {self.port}...')
@@ -134,15 +145,9 @@ class TeraRangerEvoNode(Node):
             distance_msg = Float32()
             distance_msg.data = distance
             self.distance_publisher.publish(distance_msg)
-            range_msg = Range()
-            range_msg.header.stamp = self.get_clock().now().to_msg()
-            range_msg.header.frame_id = self.frame 
-            range_msg.radiation_type = Range.INFRARED # or ULTRASOUND
-            range_msg.field_of_view = 0.1 # Radians TODO: fix with correct values or make param
-            range_msg.min_range = 0.1 # Meters TODO: fix with correct values or make param
-            range_msg.max_range = 5.0 # Meters TODO: fix with correct values or make param
-            range_msg.range = float(distance)
-            self.range_publisher.publish(range_msg)
+            self.range_msg.header.stamp = self.get_clock().now().to_msg()
+            self.range_msg.range = float(distance) # No need to check distance limits, already checked by get_evo_range()
+            self.range_publisher.publish(self.range_msg)
 
     
     def destroy_node(self):

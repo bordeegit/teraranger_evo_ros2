@@ -5,7 +5,7 @@
   <version>0.0.0</version>
   <description>ROS2 driver for TeraRanger Evo sensor</description>
   <maintainer email="matteo.bordignon@polimi.it">Matteo Bordignon</maintainer>
-  <license>TODO: License declaration</license>
+  <license>GPL-3.0-only</license>
 
   <depend>rclpy</depend>
   <depend>std_msgs</depend>

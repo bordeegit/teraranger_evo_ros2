@@ -1,0 +1,10 @@
+lidar_configs:
+  TR_evo_3m:
+    min_distance: 0.1
+    max_distance: 3.0
+  TR_evo_10m:
+    min_distance: 0.2
+    max_distance: 10.0
+  TR_evo_30m:
+    min_distance: 0.5
+    max_distance: 30.0

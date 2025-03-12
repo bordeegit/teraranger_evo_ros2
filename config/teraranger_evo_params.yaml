@@ -1,5 +1,5 @@
 teraranger_evo_node:
   ros__parameters:
-    device_name: 'TR_evo_3m'
+    lidar_type: 'TR_evo_3m'
     serial_port: '/dev/ttyACM0'
     frame_id: 'sensor_frame' 
