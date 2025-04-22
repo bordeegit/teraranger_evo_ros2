@@ -19,7 +19,7 @@ setup(
     maintainer='Matteo Bordignon',
     maintainer_email='matteo.bordignon@polimi.it',
     description='ROS2 driver for TeraRanger Evo sensor',
-    license='TODO: License declaration',
+    license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
