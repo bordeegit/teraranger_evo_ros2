@@ -106,6 +106,9 @@ class TeraRangerEvoNode(Node):
                     raw_msg = String()
                     raw_msg.data = str(rng)
                     self.raw_publisher.publish(raw_msg)
+
+                    # Flush input buffer
+                    self.evo.flushInput()
                     
                     # Check special cases (limit values)
                     if rng == 65535:  # Sensor measuring above its maximum limit

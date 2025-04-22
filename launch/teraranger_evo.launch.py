@@ -10,7 +10,7 @@ def generate_launch_description():
     pkg_dir = get_package_share_directory('teraranger_evo')
     
     # Define the default config file
-    default_config = os.path.join(pkg_dir, 'config', 'teraranger_params.yaml')
+    default_config = os.path.join(pkg_dir, 'config', 'teraranger_evo_params.yaml')
     
     # Declare the config file as a launch argument
     config_file = LaunchConfiguration('config_file')
