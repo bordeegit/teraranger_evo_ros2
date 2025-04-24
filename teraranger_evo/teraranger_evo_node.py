@@ -10,7 +10,7 @@ from rcl_interfaces.msg import ParameterDescriptor
 import serial
 import sys
 import crcmod.predefined
-from std_msgs.msg import Float32, String
+from std_msgs.msg import Float64, String
 from sensor_msgs.msg import Range
 
 class TeraRangerEvoNode(Node):
@@ -52,7 +52,7 @@ class TeraRangerEvoNode(Node):
         
         # Publishers
         self.raw_publisher = self.create_publisher(String, self.device_name + '/distance_raw', 10)
-        self.distance_publisher = self.create_publisher(Float32, self.device_name + '/distance', 10)
+        self.distance_publisher = self.create_publisher(Float64, self.device_name + '/distance', 10)
         self.range_publisher = self.create_publisher(Range, self.device_name + '/range', 10)
         
         # CRC function
@@ -134,7 +134,7 @@ class TeraRangerEvoNode(Node):
         distance = self.get_evo_range()
         
         if distance is not None:
-            distance_msg = Float32()
+            distance_msg = Float64()
             distance_msg.data = distance
             self.distance_publisher.publish(distance_msg)
             range_msg = Range()
