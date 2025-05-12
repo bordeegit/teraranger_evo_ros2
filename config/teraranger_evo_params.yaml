@@ -3,3 +3,4 @@ teraranger_evo_node:
     device_name: 'TR_evo_3m'
     serial_port: '/dev/ttyACM0'
     frame_id: 'sensor_frame' 
+    publish_rate_ms: 100

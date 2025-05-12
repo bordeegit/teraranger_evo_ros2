@@ -18,32 +18,15 @@ class TeraRangerEvoNode(Node):
         super().__init__('teraranger_evo_node')
         
         # Declare parameters with descriptors
-        name_descriptor = ParameterDescriptor(
-            description='Device name for TeraRanger Evo sensor')
-
-        port_descriptor = ParameterDescriptor(
-            description='Serial port for TeraRanger Evo sensor')
-
-        frame_descriptor = ParameterDescriptor(
-            description='Frame name for TeraRanger Evo sensor')
+        name_descriptor = ParameterDescriptor(description='Device name for TeraRanger Evo sensor')
+        port_descriptor = ParameterDescriptor(description='Serial port for TeraRanger Evo sensor')
+        frame_descriptor = ParameterDescriptor(description='Frame name for TeraRanger Evo sensor')
+        publish_descriptor = ParameterDescriptor(description='Publish rate in ms for TeraRanger Evo sensor')
         
-        self.declare_parameter(
-            'device_name', 
-            'TR_evo_3m',  # Default name
-            name_descriptor
-        )
-
-        self.declare_parameter(
-            'serial_port', 
-            '/dev/ttyACM0',  # Default port
-            port_descriptor
-        )
-
-        self.declare_parameter(
-            'frame_id', 
-            'lidar_frame',  # Default frame
-            frame_descriptor
-        )
+        self.declare_parameter('device_name', 'TR_evo_3m', name_descriptor)
+        self.declare_parameter('serial_port', '/dev/ttyACM0', port_descriptor)
+        self.declare_parameter('frame_id', 'lidar_frame',frame_descriptor)
+        self.declare_parameter('publish_rate_ms', 100, publish_descriptor)
         
         # Get parameters
         self.device_name = self.get_parameter('device_name').value
@@ -62,7 +45,7 @@ class TeraRangerEvoNode(Node):
         self.connect_to_sensor()
         
         # Timer for reading sensor
-        self.timer = self.create_timer(0.1, self.timer_callback)  # 10Hz
+        self.timer = self.create_timer(self.publish_rate_ms, self.timer_callback)  # 10Hz
         
         self.get_logger().info('TeraRanger Evo node initialized')
     
@@ -141,9 +124,9 @@ class TeraRangerEvoNode(Node):
             range_msg.header.stamp = self.get_clock().now().to_msg()
             range_msg.header.frame_id = self.frame 
             range_msg.radiation_type = Range.INFRARED # or ULTRASOUND
-            range_msg.field_of_view = 0.1 # Radians TODO: fix with correct values or make param
-            range_msg.min_range = 0.1 # Meters TODO: fix with correct values or make param
-            range_msg.max_range = 5.0 # Meters TODO: fix with correct values or make param
+            range_msg.field_of_view = 0.03 # Radians 
+            range_msg.min_range = 0.1 # Meters 
+            range_msg.max_range = 3.0 # Meters 
             range_msg.range = float(distance)
             self.range_publisher.publish(range_msg)
 
