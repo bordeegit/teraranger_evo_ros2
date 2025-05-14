@@ -1,6 +1,6 @@
 teraranger_evo_node:
   ros__parameters:
     device_name: 'TR_evo_3m'
-    serial_port: '/dev/ttyACM0'
+    serial_port: '/dev/ttyLidar'
     frame_id: 'sensor_frame' 
-    publish_rate_ms: 100
+    publish_rate_ms: 100.0

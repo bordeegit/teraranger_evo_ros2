@@ -24,14 +24,15 @@ class TeraRangerEvoNode(Node):
         publish_descriptor = ParameterDescriptor(description='Publish rate in ms for TeraRanger Evo sensor')
         
         self.declare_parameter('device_name', 'TR_evo_3m', name_descriptor)
-        self.declare_parameter('serial_port', '/dev/ttyACM0', port_descriptor)
+        self.declare_parameter('serial_port', '/dev/ttyLidar', port_descriptor)
         self.declare_parameter('frame_id', 'lidar_frame',frame_descriptor)
-        self.declare_parameter('publish_rate_ms', 100, publish_descriptor)
+        self.declare_parameter('publish_rate_ms', 100.0, publish_descriptor)
         
         # Get parameters
         self.device_name = self.get_parameter('device_name').value
         self.port = self.get_parameter('serial_port').value
         self.frame = self.get_parameter('frame_id').value
+        self.publish_rate_ms = self.get_parameter('publish_rate_ms').value
         
         # Publishers
         self.raw_publisher = self.create_publisher(String, self.device_name + '/distance_raw', 10)
@@ -45,7 +46,7 @@ class TeraRangerEvoNode(Node):
         self.connect_to_sensor()
         
         # Timer for reading sensor
-        self.timer = self.create_timer(self.publish_rate_ms, self.timer_callback)  # 10Hz
+        self.timer = self.create_timer(self.publish_rate_ms/1000.0, self.timer_callback)  # 10Hz
         
         self.get_logger().info('TeraRanger Evo node initialized')
     
